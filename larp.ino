@@ -22,7 +22,7 @@
 #include <Wire.h>
 #include "GameState.h"
 #include "led.h"
-
+// We could also use A1
 #define FLEX_PIN        A0
 #define RST_PIN         9          // Configurable, see typical pin layout above
 #define SS_PIN          10         // Configurable, see typical pin layout above
