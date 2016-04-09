@@ -31,8 +31,6 @@
 int data; // used to track data from Wire
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
-unsigned long time; //used as a timer to graph activity and time (micros(): max 70 minutes)
-float prev_acc = 0;
 void receiveEvent(int howmany) {
 
     data = Wire.read();
