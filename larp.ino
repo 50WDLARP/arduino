@@ -30,6 +30,9 @@
 
 int data; // used to track data from Wire
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
+
+unsigned long time; //used as a timer to graph activity and time (micros(): max 70 minutes)
+float prev_acc = 0;
 void receiveEvent(int howmany) {
 
     data = Wire.read();
@@ -82,6 +85,25 @@ void loop() {
             break;
     }
     led.led_loop(3);
+    
+    /*Activity Tracker*/
+    time = micros();
+    float seconds = time/1000000.0;
+    AccelerationReading reading = Bean.getAcceleration();
+    char x = abs(reading.xAxis) / 2;
+    char y = abs(reading.yAxis) / 2;
+    char z = abs(reading.zAxis) / 2;
+//    Bean.setLed(0,255,0);
+    float acc = sqrt(x*x + y*y + z*z);
+    float deltaAcc = abs(acc - prev_acc);
+    if(deltaAcc > 10.0){
+        Bean.setLed(0,0,255);
+    }
+    Serial.print(seconds);
+    Serial.print(":");
+    Serial.println(deltaAcc);
+    prev_acc = acc;
+
     /*
     if ( ! mfrc522.PICC_IsNewCardPresent()) {
 
