@@ -1,3 +1,5 @@
+/* THIS CODE RUNS ON ARDUINO NANO */
+
 /*
    Some code, including the below comment block, is adapted from
    public domain example code furnished with the MFRC522 library.
