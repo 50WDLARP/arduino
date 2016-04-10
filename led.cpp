@@ -52,12 +52,12 @@ void Led::DrawNoise() {
     }
 }
 
-void Led::DrawScroll(int current) {
+void Led::DrawScroll() {
     int i = 0;
     for (byte y = 0; y < kMatrixHeight; y++) {
         for (byte x = 0; x < kMatrixWidth; x++) {
             led_leds[ XY(x, y)] = CHSV(0, 0, 0);
-            if (i == current) {
+            if (i == current_scroll) {
                 led_leds [ XY ( x, y)] = CHSV(255, 255, 255);
             }
             i++;
@@ -70,7 +70,7 @@ void Led::DrawIntensity() {
     for (int y = 0; y < kMatrixHeight; y++) {
         for (int x = 0; x < kMatrixWidth; x++) {
             if (i < led_intensity) {
-                led_leds [ XY (x, y)] = CHSV(i * 5, 255, 255);
+                led_leds [ XY (x, y)] = CHSV(255 - i * 5, 255, 255);
             } else {
                 led_leds [ XY (x, y)] = CHSV(0, 0, 0);
             }
@@ -79,7 +79,19 @@ void Led::DrawIntensity() {
     }
 
 }
+void Led::DrawColor() {
+    int i = 0;
+    for (int y = 0; y < kMatrixHeight; y++) {
+        for (int x = 0; x < kMatrixWidth; x++) {
+                led_leds [ XY (x, y)] = current_color;
+            i++;
+        }
+    }
 
+}
+void Led::setColorRGB(int r, int g, int b) {
+    current_color = CRGB(r, g, b);
+}
 void Led::led_setup() {
 
     FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(led_leds, NUM_LEDS).setCorrection(TypicalSMD5050);
@@ -98,6 +110,10 @@ void Led::led_loop(int mode) {
         case 1:
             DrawNoise();
             break;
+        case 2:
+            DrawScroll();
+        case 3:
+            DrawColor();
         default:
             break;
     }

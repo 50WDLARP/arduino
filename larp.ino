@@ -1,3 +1,5 @@
+/* THIS CODE RUNS ON ARDUINO NANO */
+
 /*
    Some code, including the below comment block, is adapted from
    public domain example code furnished with the MFRC522 library.
@@ -19,34 +21,34 @@
  */
 #include <SPI.h>
 #include <MFRC522.h>
-#include <Wire.h>
+#include "GameState.h"
 #include "led.h"
-
+#include "BeanChannel.h"
+// We could also use A1
 #define FLEX_PIN        A0
 #define RST_PIN         9          // Configurable, see typical pin layout above
 #define SS_PIN          10         // Configurable, see typical pin layout above
 
-int led_intensity; // It's gross to use a global like this, but it seems like the best solution.
-                       // Note that led_intensity is treated as Public.
 
 int data; // used to track data from Wire
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
-void receiveEvent(int howmany) {
-
-    data = Wire.read();
-}
 
 Led led;
+TagGameStateManager gameStateManager;
+BeanChannel beanChannel;
 
 int calibrate = 0;
 void setup() {
-    Wire.begin(5);
-    Wire.onReceive(receiveEvent);
+    beanChannel.setup();
     pinMode(A0, INPUT_PULLUP);
     pinMode(3, OUTPUT);
     pinMode(6, OUTPUT);
     calibrate = analogRead(A0);
     led.led_setup();
+    gameStateManager.setup();
+    gameStateManager.addTagger(tagged);
+    gameStateManager.addUnTagger(untagged);
+    gameStateManager.addItter(it);
     Serial.begin(9600);		// Initialize serial communications with the PC
     SPI.begin();			// Init SPI bus
     mfrc522.PCD_Init();		// Init MFRC522
@@ -54,17 +56,45 @@ void setup() {
     Serial.println(F("Scan PICC to see UID, type, and data blocks..."));
 }
 
+bool tagged() {
+    Serial.println(analogRead(FLEX_PIN) - calibrate);
+    return analogRead(FLEX_PIN) - calibrate > 100;
+}
 
+bool untagged() {
+    return mfrc522.PICC_IsNewCardPresent();
+}
+
+bool it () {
+    return data == 1;
+}
 void loop() {
+    beanChannel.loop();
+    if (beanChannel.hasData()) {
+        data = beanChannel.getCurrentValue();
+    }
     analogWrite(3, data % 1000);
-    Serial.println((analogRead(FLEX_PIN) - calibrate)/4);
+    gameStateManager.loop();
     // Look for new cards
+    led.led_intensity = (analogRead(A0) - calibrate) / 4;
+    switch (gameStateManager.getState()) {
+        case NOT_IT:
+            led.setColorRGB(0, 0, 255);
+            break;
+        case IT:
+            led.setColorRGB(0, 255, 0);
+            break;
+        case FROZEN:
+            led.setColorRGB(255, 255, 255);
+        default:
+            break;
+    }
+    beanChannel.sendByte(led.led_intensity);
+    led.led_loop(3);
+    /*
     if ( ! mfrc522.PICC_IsNewCardPresent()) {
-        led.led_intensity = (analogRead(FLEX_PIN) - calibrate);
-        led.led_loop(0);
 
     } else {
-        led.led_loop(1);
     }
 
     // Select one of the cards
@@ -74,4 +104,5 @@ void loop() {
 
     // Dump debug info about the card; PICC_HaltA() is automatically called
       mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
+      */
 }
