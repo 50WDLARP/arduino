@@ -24,6 +24,10 @@ void TagGameStateManager::loop() {
 
             break;
     }
+
+    if (checkIt()) {
+        state = IT;
+    }
 }
 
 void TagGameStateManager::setup() {
@@ -39,9 +43,14 @@ void TagGameStateManager::beUnTagged() {
     state = NOT_IT;
 }
 
+void TagGameStateManager::addItter(bool (*it)(void)) {
+    checkIt = it;
+}
+
 void TagGameStateManager::addTagger(bool (*tagged)(void)) {
     checkTagged = tagged;
 }
+
 void TagGameStateManager::addUnTagger(bool (*tagged)(void)) {
     checkUnTagged = tagged;
 }

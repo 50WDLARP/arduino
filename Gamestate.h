@@ -16,10 +16,12 @@ public:
     void beUnTagged();
     void addTagger(bool (*tagged)(void));
     void addUnTagger(bool (*untagged)(void));
+    void addItter(bool (*it)(void));
 private:
     GameState state;
     bool (*checkTagged)(void);
     bool (*checkUnTagged)(void);
+    bool (*checkIt)(void);
 };
 
 #endif

@@ -3,7 +3,7 @@
 
 #include <FastLED.h>
 #include <Arduino.h>
-#define BRIGHTNESS 128
+#define BRIGHTNESS 64
 #define COLOR_ORDER GRB
 #define CHIPSET     WS2811
 
