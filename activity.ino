@@ -1,6 +1,7 @@
 /*
+ * Code to be uploaded to the LightBlue Bean
  * Code for the activity tracker
- * prints timer (in seconds) and delta acceleration to Serial
+ * Prints timer (in seconds) and delta acceleration to Serial
  */
 
 unsigned long time; //used as a timer to graph activity and time (micros(): max 70 minutes)
