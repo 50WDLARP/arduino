@@ -12,7 +12,12 @@
 const uint8_t kMatrixWidth = 16;
 const uint8_t kMatrixHeight = 16;
 const bool    kMatrixSerpentineLayout = false;
-
+typedef enum LedMode {
+    NOISE,
+    SCROLL,
+    INTENSITY,
+    COLOR
+};
 #define NUM_LEDS (kMatrixWidth * kMatrixHeight)
 class Led {
 public:
