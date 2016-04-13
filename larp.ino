@@ -33,6 +33,11 @@
 int data; // used to track data from Wire
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
+void receiveEvent(int howmany) {
+
+    data = Wire.read();
+}
+
 Led led;
 TagGameStateManager gameStateManager;
 BeanChannel beanChannel;
