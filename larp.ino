@@ -1,3 +1,5 @@
+/* THIS CODE RUNS ON ARDUINO NANO */
+
 /*
    Some code, including the below comment block, is adapted from
    public domain example code furnished with the MFRC522 library.
@@ -19,9 +21,9 @@
  */
 #include <SPI.h>
 #include <MFRC522.h>
-#include <Wire.h>
 #include "GameState.h"
 #include "led.h"
+#include "BeanChannel.h"
 // We could also use A1
 #define FLEX_PIN        A0
 #define RST_PIN         9          // Configurable, see typical pin layout above
@@ -38,12 +40,11 @@ void receiveEvent(int howmany) {
 
 Led led;
 TagGameStateManager gameStateManager;
-
+BeanChannel beanChannel;
 
 int calibrate = 0;
 void setup() {
-    Wire.begin(5);
-    Wire.onReceive(receiveEvent);
+    beanChannel.setup();
     pinMode(A0, INPUT_PULLUP);
     pinMode(3, OUTPUT);
     pinMode(6, OUTPUT);
@@ -52,6 +53,8 @@ void setup() {
     gameStateManager.setup();
     gameStateManager.addTagger(tagged);
     gameStateManager.addUnTagger(untagged);
+    gameStateManager.addItter(it);
+    gameStateManager.addQuitter(quit);
     Serial.begin(9600);		// Initialize serial communications with the PC
     SPI.begin();			// Init SPI bus
     mfrc522.PCD_Init();		// Init MFRC522
@@ -60,17 +63,35 @@ void setup() {
 }
 
 bool tagged() {
-    return analogRead(FLEX_PIN) - calibrate > 150;
+    Serial.println(analogRead(FLEX_PIN) - calibrate);
+    return analogRead(FLEX_PIN) - calibrate > 100;
 }
 
 bool untagged() {
     return mfrc522.PICC_IsNewCardPresent();
 }
+
+bool it () {
+    return data == 1;
+}
+bool quit () {
+    return data == 2;
+}
+
+int intensityLED;
 void loop() {
+    beanChannel.loop();
+    if (beanChannel.hasData()) {
+        data = beanChannel.getCurrentValue();
+    } else {
+        data = 0;
+    }
     analogWrite(3, data % 1000);
     gameStateManager.loop();
     // Look for new cards
-    switch (gameStateManager.getState()) {
+    led.led_intensity = intensityLED;
+    GameState state = gameStateManager.getState();
+    switch (state) {
         case NOT_IT:
             led.setColorRGB(0, 0, 255);
             break;
@@ -79,10 +100,17 @@ void loop() {
             break;
         case FROZEN:
             led.setColorRGB(255, 255, 255);
+            break;
         default:
             break;
     }
-    led.led_loop(3);
+    beanChannel.sendByte(led.led_intensity);
+    intensityLED = (intensityLED + 1) % 60;
+    if (state == NOT_PLAYING) {
+        led.led_loop(INTENSITY);
+    } else {
+        led.led_loop(COLOR);
+    }
     /*
     if ( ! mfrc522.PICC_IsNewCardPresent()) {
 

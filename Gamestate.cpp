@@ -24,10 +24,18 @@ void TagGameStateManager::loop() {
 
             break;
     }
+
+    if (checkIt()) {
+        state = IT;
+    }
+
+    if (checkNotPlaying()) {
+        state = NOT_PLAYING;
+    }
 }
 
 void TagGameStateManager::setup() {
-    state = IT;
+    state = NOT_PLAYING;
 }
 
 void TagGameStateManager::beTagged() {
@@ -39,9 +47,18 @@ void TagGameStateManager::beUnTagged() {
     state = NOT_IT;
 }
 
+void TagGameStateManager::addItter(bool (*it)(void)) {
+    checkIt = it;
+}
+
 void TagGameStateManager::addTagger(bool (*tagged)(void)) {
     checkTagged = tagged;
 }
+
 void TagGameStateManager::addUnTagger(bool (*tagged)(void)) {
     checkUnTagged = tagged;
+}
+
+void TagGameStateManager::addQuitter(bool (*tagged)(void)) {
+    checkNotPlaying = tagged;
 }

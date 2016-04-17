@@ -104,15 +104,15 @@ void Led::led_loop(int mode) {
     int32_t yHueDelta32 = ((int32_t)cos16( ms * (27 / 1) ) * (350 / kMatrixWidth));
     int32_t xHueDelta32 = ((int32_t)cos16( ms * (39 / 1) ) * (310 / kMatrixHeight));
     switch (mode) {
-        case 0:
+        case INTENSITY:
             DrawIntensity();
             break;
-        case 1:
+        case NOISE:
             DrawNoise();
             break;
-        case 2:
+        case SCROLL:
             DrawScroll();
-        case 3:
+        case COLOR:
             DrawColor();
         default:
             break;
