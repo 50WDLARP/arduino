@@ -11,15 +11,18 @@ void TagGameStateManager::loop() {
             if ((*checkTagged)()) {
                 beTagged();
             }
+            time_since_it_i ++;
             break;
         case IT:
             if ((*checkUnTagged)()) {
                 beUnTagged();
             }
+           
             break;
         case FROZEN:
             if ((*checkUnTagged)()) {
                 beUnTagged();
+                time_since_it_i = 0;
             }
 
             break;

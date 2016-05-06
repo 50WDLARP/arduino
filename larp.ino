@@ -41,8 +41,11 @@ void receiveEvent(int howmany) {
 Led led;
 TagGameStateManager gameStateManager;
 BeanChannel beanChannel;
+int calibration[2][10];
+int calibplace[2] = {0, 0};
 
 int calibrate = 0;
+
 void setup() {
     beanChannel.setup();
     pinMode(A0, INPUT_PULLUP);
@@ -62,9 +65,33 @@ void setup() {
     Serial.println(F("Scan PICC to see UID, type, and data blocks..."));
 }
 
+int getTaggedPin(int pin) {
+    int sum = 0;
+    int flexpin = pin == 0 ? A0 : A1;
+
+    for (int i = 0; i < 10; i++) {
+        sum = sum + calibration[pin][i];
+    }
+
+    sum /= 10;
+
+    calibrate = sum;
+
+    calibration[pin][calibplace[pin]] = analogRead(flexpin);
+
+    calibplace[pin] = (calibplace[pin] + 1) % 10;
+
+     return analogRead(flexpin) - calibrate;
+}
+
 bool tagged() {
-    Serial.println(analogRead(FLEX_PIN) - calibrate);
-    return analogRead(FLEX_PIN) - calibrate > 100;
+ int a = getTaggedPin(0);
+ int b = getTaggedPin(1);
+ Serial.print("A ");
+ Serial.println(a);
+  Serial.print("B ");
+ Serial.println(b);
+ return (a > 50 || b > 25) && gameStateManager.time_since_it() > 100;
 }
 
 bool untagged() {
@@ -72,10 +99,12 @@ bool untagged() {
 }
 
 bool it () {
-    return data == 1;
+  Serial.print("Data ");
+  Serial.println(data);
+    return data == 10;
 }
 bool quit () {
-    return data == 2;
+    return data == 20;
 }
 
 int intensityLED;
@@ -105,7 +134,7 @@ void loop() {
             break;
     }
     beanChannel.sendByte(led.led_intensity);
-    intensityLED = (intensityLED + 1) % 60;
+    intensityLED = (analogRead(FLEX_PIN) - calibrate) / 2;
     if (state == NOT_PLAYING) {
         led.led_loop(INTENSITY);
     } else {
